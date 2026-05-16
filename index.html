@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conectar WhatsApp Business</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .logo svg { width: 36px; height: 36px; fill: #fff; }
+
+    h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 12px; }
+    p  { color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
+
+    .btn-wa {
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background .2s;
+    }
+    .btn-wa:hover { background: #1ebe59; }
+    .btn-wa:disabled { background: #ccc; cursor: default; }
+
+    .btn-retry {
+      background: transparent;
+      border: 2px solid #e53e3e;
+      color: #e53e3e;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #f0f2f5;
+      border-top-color: #25D366;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .icon-big { font-size: 48px; margin-bottom: 16px; }
+    .text-green { color: #22a750; }
+    .text-red   { color: #e53e3e; }
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .info-list {
+      text-align: left;
+      margin: 20px 0 32px;
+      list-style: none;
+    }
+    .info-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .info-list li::before {
+      content: '✓';
+      color: #25D366;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Step: connect -->
+  <div id="step-connect" class="step active">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M11.998 0C5.374 0 0 5.374 0 11.998c0 2.117.551 4.101 1.514 5.825L.026 23.974l6.328-1.466A11.934 11.934 0 0011.998 24C18.622 24 24 18.626 24 11.998 24 5.374 18.622 0 11.998 0zm0 21.818a9.808 9.808 0 01-5.012-1.37l-.36-.213-3.752.87.944-3.647-.236-.375a9.818 9.818 0 01-1.765-5.085C1.817 6.57 6.569 1.817 12 1.817c5.432 0 10.183 4.752 10.183 10.181 0 5.432-4.751 10.82-10.185 10.82z"/>
+      </svg>
+    </div>
+    <h1>Conectar WhatsApp Business</h1>
+    <p>Autorize sua conta Meta Business para ativar sua caixa de entrada WhatsApp.</p>
+    <ul class="info-list">
+      <li>Processo seguro via Meta Embedded Signup</li>
+      <li>Sem compartilhar senha — apenas autorização OAuth</li>
+      <li>Caixa de entrada criada automaticamente</li>
+    </ul>
+    <button class="btn-wa" id="btn-signup" onclick="launchSignup()">
+      Conectar WhatsApp Business
+    </button>
+  </div>
+
+  <!-- Step: loading -->
+  <div id="step-loading" class="step">
+    <div class="spinner"></div>
+    <h1>Configurando sua conta...</h1>
+    <p>Aguarde enquanto criamos sua caixa de entrada.</p>
+  </div>
+
+  <!-- Step: success -->
+  <div id="step-success" class="step">
+    <div class="icon-big">✅</div>
+    <h1 class="text-green">Conta conectada!</h1>
+    <p>Sua caixa de entrada WhatsApp foi criada e já está ativa no painel.</p>
+  </div>
+
+  <!-- Step: error -->
+  <div id="step-error" class="step">
+    <div class="icon-big">❌</div>
+    <h1 class="text-red">Erro na conexão</h1>
+    <p id="error-msg">Ocorreu um erro inesperado.</p>
+    <button class="btn-retry" onclick="showStep('connect')">Tentar novamente</button>
+  </div>
+
+</div>
+
+<script>
+  const APP_ID    = '885918550874698';
+  const CONFIG_ID = '977914971293536';
+  const N8N_HOOK  = 'https://n8n.solucoesdeia.com/webhook/whatsapp-embedded-signup';
+
+  // Captura phone_number_id e waba_id do evento Meta (sessionInfoVersion 3)
+  let sessionData = {};
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://www.facebook.com') return;
+    try {
+      const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if (msg && msg.type === 'WA_EMBEDDED_SIGNUP') {
+        sessionData = msg.data || {};
+      }
+    } catch (_) {}
+  });
+
+  window.fbAsyncInit = function () {
+    FB.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: 'v21.0' });
+  };
+
+  function launchSignup() {
+    sessionData = {};
+    FB.login(function (response) {
+      if (response.authResponse && response.authResponse.code) {
+        showStep('loading');
+        sendToN8n(response.authResponse.code);
+      } else {
+        showError('Autorização cancelada ou negada pelo usuário.');
+      }
+    }, {
+      config_id: CONFIG_ID,
+      response_type: 'code',
+      override_default_response_type: true,
+      extras: { setup: {}, featureType: '', sessionInfoVersion: '3' }
+    });
+  }
+
+  async function sendToN8n(code) {
+    try {
+      const res = await fetch(N8N_HOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, session: sessionData })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showStep('success');
+      } else {
+        showError(data.error || 'Erro ao configurar conta. Tente novamente.');
+      }
+    } catch (_) {
+      showError('Falha de conexão com o servidor. Tente novamente.');
+    }
+  }
+
+  function showStep(step) {
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    document.getElementById('step-' + step).classList.add('active');
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    showStep('error');
+  }
+</script>
+
+<script async defer crossorigin="anonymous"
+  src="https://connect.facebook.net/pt_BR/sdk.js"></script>
+
+</body>
+</html>

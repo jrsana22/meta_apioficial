@@ -1,0 +1,157 @@
+{
+  "name": "WhatsApp Embedded Signup → Chatwoot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-embedded-signup",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "whatsapp-embedded-signup"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v21.0/oauth/access_token?client_id={{ $env.META_APP_ID }}&client_secret={{ $env.META_APP_SECRET }}&code={{ $json.body.code }}",
+        "options": {}
+      },
+      "id": "node-exchange-token",
+      "name": "Trocar code por token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v21.0/debug_token?input_token={{ $json.access_token }}&access_token={{ $env.META_APP_ID }}|{{ $env.META_APP_SECRET }}",
+        "options": {}
+      },
+      "id": "node-debug-token",
+      "name": "Debug Token (pega granular_scopes)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Webhook').item.json.body.session.phone_number_id }}?fields=display_phone_number,verified_name&access_token={{ $('Trocar code por token').item.json.access_token }}",
+        "options": {}
+      },
+      "id": "node-get-phone",
+      "name": "Buscar dados do número",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://painelsana-chatwoot.mofsig.easypanel.host/api/v1/accounts/1/inboxes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.CHATWOOT_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "=WhatsApp {{ $('Buscar dados do número').item.json.display_phone_number }}"
+            },
+            {
+              "name": "channel[type]",
+              "value": "whatsapp"
+            },
+            {
+              "name": "channel[phone_number]",
+              "value": "={{ $('Buscar dados do número').item.json.display_phone_number }}"
+            },
+            {
+              "name": "channel[provider]",
+              "value": "whatsapp_cloud"
+            },
+            {
+              "name": "channel[provider_config][api_access_token]",
+              "value": "={{ $('Trocar code por token').item.json.access_token }}"
+            },
+            {
+              "name": "channel[provider_config][phone_number_id]",
+              "value": "={{ $('Webhook').item.json.body.session.phone_number_id }}"
+            },
+            {
+              "name": "channel[provider_config][business_account_id]",
+              "value": "={{ $('Webhook').item.json.body.session.waba_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-inbox",
+      "name": "Criar Inbox no Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"inbox_id\": {{ $json.id }}, \"phone\": \"{{ $('Buscar dados do número').item.json.display_phone_number }}\" }"
+      },
+      "id": "node-respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1200, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"error\": \"{{ $json.message }}\" }",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "node-respond-err",
+      "name": "Responder Erro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1200, 180]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Trocar code por token", "type": "main", "index": 0 }]]
+    },
+    "Trocar code por token": {
+      "main": [[{ "node": "Debug Token (pega granular_scopes)", "type": "main", "index": 0 }]]
+    },
+    "Debug Token (pega granular_scopes)": {
+      "main": [[{ "node": "Buscar dados do número", "type": "main", "index": 0 }]]
+    },
+    "Buscar dados do número": {
+      "main": [[{ "node": "Criar Inbox no Chatwoot", "type": "main", "index": 0 }]]
+    },
+    "Criar Inbox no Chatwoot": {
+      "main": [
+        [{ "node": "Responder OK", "type": "main", "index": 0 }],
+        [{ "node": "Responder Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
