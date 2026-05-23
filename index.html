@@ -58,6 +58,25 @@
     .btn-wa:hover { background: #1ebe59; }
     .btn-wa:disabled { background: #ccc; cursor: default; }
 
+    .btn-fb {
+      background: #1877F2;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .btn-fb:hover { background: #166fe5; }
+
     .btn-retry {
       background: transparent;
       border: 2px solid #e53e3e;
@@ -106,6 +125,43 @@
       font-weight: 700;
       flex-shrink: 0;
     }
+
+    .notice {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      text-align: left;
+      font-size: 14px;
+      color: #7a5c00;
+      line-height: 1.5;
+    }
+    .notice strong { color: #5a4000; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: #bbb;
+      font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #eee;
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -121,11 +177,28 @@
       </svg>
     </div>
     <h1>Conectar WhatsApp Business</h1>
-    <p>Autorize sua conta Meta Business para ativar sua caixa de entrada WhatsApp.</p>
+    <p>Siga os 2 passos abaixo para autorizar sua conta.</p>
+
+    <!-- Passo 1 -->
+    <div class="step-label">Passo 1 — Entre no Facebook</div>
+    <div class="notice">
+      <strong>⚠️ Antes de continuar:</strong> você precisa estar logado no Facebook com a conta da sua empresa. Clique no botão abaixo para entrar.
+    </div>
+    <a href="https://www.facebook.com" target="_blank" class="btn-fb">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+      Entrar no Facebook
+    </a>
+
+    <div class="divider">depois</div>
+
+    <!-- Passo 2 -->
+    <div class="step-label">Passo 2 — Conecte o WhatsApp</div>
     <ul class="info-list">
       <li>Processo seguro via Meta Embedded Signup</li>
       <li>Sem compartilhar senha — apenas autorização OAuth</li>
-      <li>Caixa de entrada criada automaticamente</li>
+      <li>Conta configurada automaticamente</li>
     </ul>
     <button class="btn-wa" id="btn-signup" onclick="launchSignup()">
       Conectar WhatsApp Business
@@ -136,14 +209,14 @@
   <div id="step-loading" class="step">
     <div class="spinner"></div>
     <h1>Configurando sua conta...</h1>
-    <p>Aguarde enquanto criamos sua caixa de entrada.</p>
+    <p>Aguarde enquanto configuramos seu WhatsApp Business.</p>
   </div>
 
   <!-- Step: success -->
   <div id="step-success" class="step">
     <div class="icon-big">✅</div>
     <h1 class="text-green">Conta conectada!</h1>
-    <p>Sua caixa de entrada WhatsApp foi criada e já está ativa no painel.</p>
+    <p>Seu WhatsApp Business foi autorizado com sucesso. Em breve nossa equipe vai finalizar a configuração.</p>
   </div>
 
   <!-- Step: error -->
@@ -161,7 +234,6 @@
   const CONFIG_ID = '977914971293536';
   const N8N_HOOK  = 'https://n8n.solucoesdeia.com/webhook/whatsapp-embedded-signup';
 
-  // Captura phone_number_id e waba_id do evento Meta (sessionInfoVersion 3)
   let sessionData = {};
   window.addEventListener('message', (event) => {
     if (event.origin !== 'https://www.facebook.com') return;
@@ -174,7 +246,7 @@
   });
 
   window.fbAsyncInit = function () {
-    FB.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: 'v21.0' });
+    FB.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: 'v22.0' });
   };
 
   function launchSignup() {
@@ -184,7 +256,7 @@
         showStep('loading');
         sendToN8n(response.authResponse.code);
       } else {
-        showError('Autorização cancelada ou negada pelo usuário.');
+        showError('Autorização cancelada ou negada. Certifique-se de estar logado no Facebook e tente novamente.');
       }
     }, {
       config_id: CONFIG_ID,
